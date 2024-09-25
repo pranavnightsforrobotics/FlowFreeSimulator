@@ -12,7 +12,7 @@ ySize = 0
 circRad = 0
 cellSize = 0
 
-f = open("map1.txt", "r")
+f = open("map2.txt", "r")
 for x in f:
     if(x[0:1] == "g"):
         x = x[2:]
@@ -65,7 +65,7 @@ for i in range(xSize):
     colorGrid.append([])
     for j in range(ySize):
         typeGrid[i].append(0)
-        colorGrid[i].append([black])
+        colorGrid[i].append(black)
 
 for i in points:
     typeGrid[i[0]][i[1]] = 2
@@ -77,10 +77,10 @@ def pixelPos(num):
     return num * cellSize + 40
 
 def draw():
-    for row in range(ySize):
-        for col in range(xSize):
-            x = col * cellSize
-            y = row * cellSize
+    for row in range(xSize):
+        for col in range(ySize):
+            x = row * cellSize
+            y = col * cellSize
             if(typeGrid[row][col] == 2):
                 pygame.draw.circle(screen, colorGrid[row][col], (pixelPos(row), pixelPos(col)), 40 - 4)
             pygame.draw.rect(screen, white, (x, y, cellSize, cellSize), 1)

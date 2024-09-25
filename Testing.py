@@ -1,6 +1,15 @@
 import math
 import pygame
 
+# all our grids and maps are set up with [x][y] so therefore when visualizing
+
+# [[ (0,0), (0, 1), (0,2) ],
+#  [ (1,0), (1, 1), (1,2) ],
+#  [ (2,0), (2, 1), (2,2) ]]
+
+# so flip to left 90 degrees and horizontaly cut in middle and flip
+
+
 # Initialize Pygame
 pygame.init()
 
@@ -79,15 +88,17 @@ def pixelPos(num):
     return num * cellSize + 40
 
 def draw():
-    for row in range(ySize):
-        for col in range(xSize):
-            x = col * cellSize
-            y = row * cellSize
+    for row in range(xSize):
+        for col in range(ySize):
+            x = row * cellSize
+            y = col * cellSize
             if(typeGrid[row][col] == 2):
                 pygame.draw.circle(screen, colorGrid[row][col], (pixelPos(row), pixelPos(col)), 40 - 4)
             pygame.draw.rect(screen, white, (x, y, cellSize, cellSize), 1)
 
 draw()
+
+print(colorGrid)
 
 pygame.display.flip()
 
@@ -289,5 +300,7 @@ while running:
     # Update the display
     pygame.display.flip()
 
+
+print(colorGrid)
 # Quit Pygame
 pygame.quit()
