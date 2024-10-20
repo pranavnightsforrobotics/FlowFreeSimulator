@@ -165,8 +165,6 @@ def drawGrid():
 
 draw()
 
-print(colorGrid)
-
 pygame.display.flip()
 
 curCelX = 0
@@ -230,14 +228,7 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
             if( abs(nodesDict.get(color).x - curCelX) + abs(nodesDict.get(color).y - curCelY) == 1):
                 return
             curNode = nodesDict.get(color)
-            print(curNode)
             arr = cutToStart(curNode)
-            print(curNode.head.x)
-            print(curNode.head.y)
-            
-            print("scoopy poopy")
-            print(arr)            
-            print("scoopy poopy")
             for i in arr:
                 typeGrid[i[0]][i[1]] = 0
                 colorGrid[i[0]][i[1]] = black
@@ -259,8 +250,6 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
             curNode = nodesDict.get(color)
             curNode = DoubleNode(curCelX, curCelY, curNode)
             nodesDict.update({color : curNode})
-            print(curNode)
-            print(color)
             arr = cutBack(nodesDict.get(color))
             newNode = arr[-1]
             nodesDict.update({color: newNode})
@@ -270,7 +259,6 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
                 colorGrid[i[0]][i[1]] = black
                 pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
             curNode = nodesDict.get(color)
-            print(curNode.pastNode)
             if(curNode.pastNode == None):
                 return(curCelX, curCelY, 0, 0, 0, 0)
             elif(curNode.pastNode.pastNode == None):
@@ -463,12 +451,5 @@ while running:
     # Update the display
     pygame.display.flip()
 
-
-print(nodesDict)
-# print(nodesDict.get((255, 0, 0)))
-curNode = nodesDict.get((255, 0, 0))
-while(curNode != None):
-    print(curNode)
-    curNode = curNode.pastNode
 # Quit Pygame
 pygame.quit()
