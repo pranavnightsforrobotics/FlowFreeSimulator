@@ -3,6 +3,7 @@ import pygame
 pygame.init()
 
 points = []
+colors = []
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -39,6 +40,7 @@ for x in f:
     x = x[space+1:]
     space = x.find(" ")
     blue = int(x[0:space])
+    colors.append((red, green, blue))
     x = x[space+3:]
     space = x.find(" ")
     firstXPos = int(x[0:space])
@@ -101,3 +103,5 @@ while(running):
     pygame.display.flip()
 
 pygame.quit()
+
+print(colors)

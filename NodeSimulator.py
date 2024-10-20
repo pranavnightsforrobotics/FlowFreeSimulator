@@ -74,5 +74,10 @@ print(arr)
 # print(currentNode)
 # print(head)
 # print(currentNode.pastNode)
+colors = [(255, 0, 0), (100, 125, 200)]
 
+nodesDict = {}
+for i in colors:
+    nodesDict.update({i:None})
 
+print(nodesDict)
