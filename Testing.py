@@ -90,7 +90,7 @@ ySize = 0
 circRad = 0
 cellSize = 0
 
-f = open("map1.txt", "r")
+f = open("map2.txt", "r")
 for x in f:
     if(x[0:1] == "g"):
         x = x[2:]
@@ -206,7 +206,7 @@ def input(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY):
     curCelX = (int) (mouseX / cellSize)
     curCelY = (int) (mouseY / cellSize)
 
-    if(colorGrid[curCelX][curCelY] != colorGrid[pastCelX][pastCelY] and ( (typeGrid[curCelX][curCelY] == 1 and typeGrid[pastCelX][pastCelY] == 1) or ((typeGrid[curCelX][curCelY] == 1 and typeGrid[pastCelX][pastCelY] == 2)) or ((typeGrid[curCelX][curCelY] == 2 and typeGrid[pastCelX][pastCelY] == 1)))  and (abs(curCelX-pastCelX) + abs(curCelY-pastCelY) == 1) ):
+    if(colorGrid[curCelX][curCelY] != colorGrid[pastCelX][pastCelY] and ( (typeGrid[curCelX][curCelY] == 1 and typeGrid[pastCelX][pastCelY] == 1) or ((typeGrid[curCelX][curCelY] == 1 and typeGrid[pastCelX][pastCelY] == 2)))  and (abs(curCelX-pastCelX) + abs(curCelY-pastCelY) == 1) ):
         color = colorGrid[pastCelX][pastCelY]
     elif(colorGrid[curCelX][curCelY] != black):
         color = colorGrid[curCelX][curCelY]
@@ -297,7 +297,8 @@ def checkDrawing(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCel
             return
     
 def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color, bleh):
-    print(str(curCelX) + " " + str(curCelY) + " " + str(pastCelX) + " " + str(pastCelY) + " " + str([pastPastCelX]) + " " + str(pastPastCelY) + " " + str(color))
+    # print(str(curCelX) + " " + str(curCelY) + " " + str(pastCelX) + " " + str(pastCelY) + " " + str([pastPastCelX]) + " " + str(pastPastCelY) + " " + str(color))
+    print(nodesDict.get(color))
     if(typeGrid[curCelX][curCelY] == 2):
         if(nodesDict.get(color) != None):
             if( abs(nodesDict.get(color).x - curCelX) + abs(nodesDict.get(color).y - curCelY) == 1 and (nodesDict.get(color).head.x != curCelX or nodesDict.get(color).head.y != curCelY)):
@@ -361,6 +362,18 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
                     return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, curNode.pastNode.pastNode.x, curNode.pastNode.pastNode.y)
         else:
             print("dark age")
+            print(color)
+            if(typeGrid[pastCelX][pastCelY] == 2):
+                curNode = nodesDict.get(color)
+                arr = cutToStart(curNode)
+                for i in arr:
+                    typeGrid[i[0]][i[1]] = 0
+                    colorGrid[i[0]][i[1]] = black
+                    pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
+                curNode = DoubleNode(pastCelX, pastCelY)
+                curNode = DoubleNode(pastCelX, pastCelY, curNode, curNode)
+                nodesDict.update({color : curNode})
+
             curNode = nodesDict.get(color)
             curNode = DoubleNode(curCelX, curCelY, curNode)
             nodesDict.update({color : curNode})
@@ -371,7 +384,7 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
             if(intersectingNode.x == curNode.x and intersectingNode.y == curNode.y):
                 intersectingNode = intersectingNode.pastNode
             nodesDict.update({colorGrid[curCelX][curCelY] : intersectingNode})
-            print(intersectingNode)
+
             newIntersect.pop(-1)
             for i in newIntersect:
                 typeGrid[i[0]][i[1]] = 0
@@ -382,6 +395,14 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
                 curNode = DoubleNode(curCelX, curCelY, curNode, curNode)
             else:
                 curNode = DoubleNode(curCelX, curCelY, curNode)
+
+            if(curNode.head.x != nodesDict.get(color).head.x and curNode.head.y != nodesDict.get(color).head.y):
+                arr = cutToStart(nodesDict.get(color))
+                for i in arr:
+                    typeGrid[i[0]][i[1]] = 0
+                    colorGrid[i[0]][i[1]] = black
+                    pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
+
 
             nodesDict.update({color: curNode})
 
@@ -550,8 +571,8 @@ while running:
     lastCelY = inputs[1]
     inputs = input(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5])
 
-    if(inputs[0] == lastCelX and inputs[1] == lastCelY):
-        inputs = (inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], False)
+    # if(inputs[0] == lastCelX and inputs[1] == lastCelY):
+    #     inputs = (inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], False)
 
     if(inputs[-1]):
         arr = DrawBoard(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], inputs[7])
