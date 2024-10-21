@@ -36,10 +36,6 @@ def cutBack(node):
     cut = []
     curX = node.x
     curY = node.y
-    reset = False
-    if(curX == node.head.x and curY == node.head.y):
-        reset = True
-    # cut.append([curX, curY])
     cur = node.pastNode
     cut.append([cur.x, cur.y])
     while(cur.x != curX or cur.y != curY):
@@ -47,6 +43,21 @@ def cutBack(node):
         cut.append([cur.x, cur.y])
 
     cut.pop(-1)
+    cut.append(cur)
+
+    return cut
+
+def cutToPoint(nodeToCut, nodeToCutTo):
+    cut = []
+    cutToX = nodeToCutTo.x
+    cutToY = nodeToCutTo.y
+    cur = nodeToCut
+    cut.append([cur.x, cur.y])
+    while(cur.x != cutToX or cur.y != cutToY):
+        cur = cur.pastNode
+        cut.append([cur.x, cur.y])
+
+    cur = cur.pastNode
     cut.append(cur)
 
     return cut
@@ -194,7 +205,10 @@ def input(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY):
 
     curCelX = (int) (mouseX / cellSize)
     curCelY = (int) (mouseY / cellSize)
-    if(colorGrid[curCelX][curCelY] != black):
+
+    if(colorGrid[curCelX][curCelY] != colorGrid[pastCelX][pastCelY] and ( (typeGrid[curCelX][curCelY] == 1 and typeGrid[pastCelX][pastCelY] == 1) or ((typeGrid[curCelX][curCelY] == 1 and typeGrid[pastCelX][pastCelY] == 2)) or ((typeGrid[curCelX][curCelY] == 2 and typeGrid[pastCelX][pastCelY] == 1)))  and (abs(curCelX-pastCelX) + abs(curCelY-pastCelY) == 1) ):
+        color = colorGrid[pastCelX][pastCelY]
+    elif(colorGrid[curCelX][curCelY] != black):
         color = colorGrid[curCelX][curCelY]
     else:
         color = colorGrid[pastCelX][pastCelY]
@@ -216,16 +230,78 @@ def input(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY):
 # down right - 7
 # down right - 8
 lastTurn = [False, False, False, False, False, False, False, False]
+
+def checkDrawing(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color):
+    if((typeGrid[pastCelX][pastCelY] != 2)):
+        if(curCelX == pastCelX and curCelY > pastCelY and pastPastCelX < pastCelX and lastTurn[0] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad * 2, circRad), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY), circRad, circRad))
+            return
+
+        # draw right to up
+        elif(curCelX == pastCelX and curCelY < pastCelY and pastPastCelX < pastCelX and lastTurn[1] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad * 2, circRad), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad))
+            return
+
+        # draw up to right
+        elif(curCelX > pastCelX and curCelY == pastCelY and pastPastCelY > pastCelY and lastTurn[2] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad * 2), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY), circRad, circRad))
+            return
+
+        # draw up to left
+        elif(curCelX < pastCelX and curCelY == pastCelY and pastPastCelY > pastCelY and lastTurn[3] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad * 2), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY), circRad, circRad))
+            return
+
+        # draw left to down
+        elif(curCelX == pastCelX and curCelY > pastCelY and pastPastCelX > pastCelX and lastTurn[4] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad * 2, circRad), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY), circRad, circRad))
+            return
+
+        # draw left to up
+        elif(curCelX == pastCelX and curCelY < pastCelY and pastPastCelX > pastCelX and lastTurn[5] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad * 2, circRad), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad))
+            return
+
+        # draw down to right
+        elif(curCelX > pastCelX and curCelY == pastCelY and pastPastCelY < pastCelY and lastTurn[6] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad * 2), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad))
+            return
+
+        # draw down to left
+        elif(curCelX < pastCelX and curCelY == pastCelY and pastPastCelY < pastCelY and lastTurn[7] == False):
+            pygame.draw.rect(screen, black, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad * 2), 0)
+            pygame.draw.circle(screen, color, (pixelPos(pastCelX), pixelPos(pastCelY)), circRad / 2)
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad, pixelPos(pastCelY) - circRad / 2, circRad, circRad))
+            pygame.draw.rect(screen, color, (pixelPos(pastCelX) - circRad / 2, pixelPos(pastCelY) - circRad, circRad, circRad))
+            return
     
 def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color, bleh):
     print(str(curCelX) + " " + str(curCelY) + " " + str(pastCelX) + " " + str(pastCelY) + " " + str([pastPastCelX]) + " " + str(pastPastCelY) + " " + str(color))
-
-    # global typeGrid
-    # global colorGrid
-
     if(typeGrid[curCelX][curCelY] == 2):
         if(nodesDict.get(color) != None):
-            if( abs(nodesDict.get(color).x - curCelX) + abs(nodesDict.get(color).y - curCelY) == 1):
+            if( abs(nodesDict.get(color).x - curCelX) + abs(nodesDict.get(color).y - curCelY) == 1 and (nodesDict.get(color).head.x != curCelX or nodesDict.get(color).head.y != curCelY)):
+                checkDrawing(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color)
                 return
             curNode = nodesDict.get(color)
             arr = cutToStart(curNode)
@@ -233,13 +309,49 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
                 typeGrid[i[0]][i[1]] = 0
                 colorGrid[i[0]][i[1]] = black
                 pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
-            nodesDict.update({color : DoubleNode(curCelX, curCelY)})
+            curNode = DoubleNode(curCelX, curCelY)
+            curNode = DoubleNode(curCelX, curCelY, curNode, curNode)
+            nodesDict.update({color : curNode})
         else:
-            nodesDict.update({color : DoubleNode(curCelX, curCelY)})
+            curNode = DoubleNode(curCelX, curCelY)
+            curNode = DoubleNode(curCelX, curCelY, curNode, curNode)
+            nodesDict.update({color : curNode})
 
     elif(typeGrid[curCelX][curCelY] == 1):
         if(colorGrid[curCelX][curCelY] == color):
             if(nodesDict.get(color).pastNode.x != pastCelX and nodesDict.get(color).pastNode.y != pastCelY):
+                curNode = nodesDict.get(color)
+                if(typeGrid[pastCelX][pastCelY] == 2):
+                    curNode = nodesDict.get(color)
+                    arr = cutToStart(curNode)
+                    for i in arr:
+                        typeGrid[i[0]][i[1]] = 0
+                        colorGrid[i[0]][i[1]] = black
+                        pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
+                    curNode = DoubleNode(pastCelX, pastCelY)
+                    curNode = DoubleNode(pastCelX, pastCelY, curNode, curNode)
+                    curNode = DoubleNode(curCelX, curCelY, curNode)
+                    nodesDict.update({color : curNode})
+
+                elif(curNode.pastNode == None):
+                    return(curCelX, curCelY, 0, 0, 0, 0)
+                elif(curNode.pastNode.pastNode == None):
+                    return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, 0, 0)
+                else:
+                    return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, curNode.pastNode.pastNode.x, curNode.pastNode.pastNode.y)
+                
+            else:
+                curNode = nodesDict.get(color)
+                curNode = DoubleNode(curCelX, curCelY, curNode)
+                nodesDict.update({color : curNode})
+                arr = cutBack(nodesDict.get(color))
+                newNode = arr[-1]
+                nodesDict.update({color: newNode})
+                arr.pop(-1)
+                for i in arr:
+                    typeGrid[i[0]][i[1]] = 0
+                    colorGrid[i[0]][i[1]] = black
+                    pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
                 curNode = nodesDict.get(color)
                 if(curNode.pastNode == None):
                     return(curCelX, curCelY, 0, 0, 0, 0)
@@ -247,39 +359,46 @@ def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, 
                     return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, 0, 0)
                 else:
                     return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, curNode.pastNode.pastNode.x, curNode.pastNode.pastNode.y)
+        else:
+            print("dark age")
             curNode = nodesDict.get(color)
             curNode = DoubleNode(curCelX, curCelY, curNode)
             nodesDict.update({color : curNode})
-            arr = cutBack(nodesDict.get(color))
-            newNode = arr[-1]
-            nodesDict.update({color: newNode})
-            arr.pop(-1)
+            intersectingNode = nodesDict.get(colorGrid[curCelX][curCelY])
+
+            newIntersect = cutToPoint(intersectingNode, curNode)
+            intersectingNode = newIntersect[-1]
+            if(intersectingNode.x == curNode.x and intersectingNode.y == curNode.y):
+                intersectingNode = intersectingNode.pastNode
+            nodesDict.update({colorGrid[curCelX][curCelY] : intersectingNode})
+            print(intersectingNode)
+            newIntersect.pop(-1)
+            for i in newIntersect:
+                typeGrid[i[0]][i[1]] = 0
+                colorGrid[i[0]][i[1]] = black
+                pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
+            
+            if(curNode.head == None):
+                curNode = DoubleNode(curCelX, curCelY, curNode, curNode)
+            else:
+                curNode = DoubleNode(curCelX, curCelY, curNode)
+
+            nodesDict.update({color: curNode})
+
+    else:
+        curNode = nodesDict.get(color)
+        if(typeGrid[pastCelX][pastCelY] == 2 and (curNode.head.x != pastCelX or curNode.head.y != pastCelY) ):
+            arr = cutToStart(curNode)
             for i in arr:
                 typeGrid[i[0]][i[1]] = 0
                 colorGrid[i[0]][i[1]] = black
                 pygame.draw.rect(screen, black, (pixelPos(i[0]) - circRad, pixelPos(i[1]) - circRad, circRad * 2, circRad * 2), 0)
-            curNode = nodesDict.get(color)
-            if(curNode.pastNode == None):
-                return(curCelX, curCelY, 0, 0, 0, 0)
-            elif(curNode.pastNode.pastNode == None):
-                return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, 0, 0)
-            else:
-                return(curCelX, curCelY, curNode.pastNode.x, curNode.pastNode.y, curNode.pastNode.pastNode.x, curNode.pastNode.pastNode.y)
-        else:
-            curNode = nodesDict.get(color)
-            intersectingNode = nodesDict.get(colorGrid[curCelX][curCelY])
-            newIntersect = gotCut(intersectingNode)
-            nodesDict.update({colorGrid[curCelX][curCelY]: newIntersect[-1]})
-            newIntersect.pop(-1)
-            typeGrid[newIntersect[0][0]][newIntersect[0][1]] = 0
-            colorGrid[newIntersect[0][0]][newIntersect[0][1]] = black
+            curNode = DoubleNode(pastCelX, pastCelY)
+            curNode = DoubleNode(pastCelX, pastCelY, curNode, curNode)
             curNode = DoubleNode(curCelX, curCelY, curNode)
-            nodesDict.update({color: curNode})
-            pygame.draw.rect(screen, black, (pixelPos(newIntersect[0][0]) - circRad, pixelPos(newIntersect[0][1]) - circRad, circRad * 2, circRad * 2), 0)
+            nodesDict.update({color : curNode})
 
-    else:
-        curNode = nodesDict.get(color)
-        if(typeGrid[curNode.x][curNode.y] == 2 and (curNode.x != curCelX or curNode.y != curCelY)):
+        elif(typeGrid[curNode.x][curNode.y] == 2 and (curNode.x != curCelX or curNode.y != curCelY)):
             curNode = DoubleNode(curCelX, curCelY, curNode, curNode)
         elif((curNode.x != curCelX or curNode.y != curCelY)):
             curNode = DoubleNode(curCelX, curCelY, curNode)
