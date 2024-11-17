@@ -215,7 +215,7 @@ def input(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY):
 
     if( (colorGrid[curCelX][curCelY] == black) and ( ((abs(curCelX - pastCelX) >= 1) ) and ((curCelY - pastCelY) >= 1) ) ):
         return (curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, colorGrid[pastCelX][pastCelY], False)
-    elif(mousePressed and ( (abs(curCelX - pastCelX) + abs(curCelY - pastCelY) <= 1)  or (pastCelY == 0 and pastCelX == 0 and pastPastCelX == 0 and pastPastCelY == 0) )):
+    elif(mousePressed and ( ( (colorGrid[curCelX][curCelY] == colorGrid[pastCelX][pastCelY] and abs(curCelX - pastCelX) + abs(curCelY - pastCelY) <= 1 ) or (colorGrid[curCelX][curCelY] != colorGrid[pastCelX][pastCelY]) )  or (pastCelY == 0 and pastCelX == 0 and pastPastCelX == 0 and pastPastCelY == 0) )):
         return (curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color, True)
     else:
         return (curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, colorGrid[pastCelX][pastCelY], False)
@@ -297,8 +297,8 @@ def checkDrawing(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCel
             return
     
 def DrawBoard(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color, bleh):
-    # print(str(curCelX) + " " + str(curCelY) + " " + str(pastCelX) + " " + str(pastCelY) + " " + str([pastPastCelX]) + " " + str(pastPastCelY) + " " + str(color))
-    print(nodesDict.get(color))
+    print(str(curCelX) + " " + str(curCelY) + " " + str(pastCelX) + " " + str(pastCelY) + " " + str([pastPastCelX]) + " " + str(pastPastCelY) + " " + str(color))
+    # print(nodesDict.get(color))
     if(typeGrid[curCelX][curCelY] == 2):
         if(nodesDict.get(color) != None):
             if( abs(nodesDict.get(color).x - curCelX) + abs(nodesDict.get(color).y - curCelY) == 1 and (nodesDict.get(color).head.x != curCelX or nodesDict.get(color).head.y != curCelY)):
