@@ -90,7 +90,7 @@ ySize = 0
 circRad = 0
 cellSize = 0
 
-f = open("map2.txt", "r")
+f = open("map1.txt", "r")
 for x in f:
     if(x[0:1] == "g"):
         x = x[2:]
@@ -215,7 +215,7 @@ def input(curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY):
 
     if( (colorGrid[curCelX][curCelY] == black) and ( ((abs(curCelX - pastCelX) >= 1) ) and ((curCelY - pastCelY) >= 1) ) ):
         return (curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, colorGrid[pastCelX][pastCelY], False)
-    elif(mousePressed):
+    elif(mousePressed and ( (abs(curCelX - pastCelX) + abs(curCelY - pastCelY) <= 1)  or (pastCelY == 0 and pastCelX == 0 and pastPastCelX == 0 and pastPastCelY == 0) )):
         return (curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, color, True)
     else:
         return (curCelX, curCelY, pastCelX, pastCelY, pastPastCelX, pastPastCelY, colorGrid[pastCelX][pastCelY], False)
