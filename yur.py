@@ -17,6 +17,7 @@ from datetime import datetime
 from argparse import ArgumentParser
 from collections import defaultdict
 import pycosat
+import functools
 
 
 LEFT = 1
@@ -37,6 +38,8 @@ BL = BOTTOM | LEFT
 BR = BOTTOM | RIGHT
 
 DIR_TYPES = [LR, TB, TL, TR, BL, BR]
+
+# DOES YOUR INDIVIDUAL CELL HAVE A CONNECTION TO THE LEFT & RIGHT OR DOES IT HAVE TO TOP AND RIGHT
 
 DIR_FLIP = {
     LEFT: RIGHT,
@@ -178,7 +181,7 @@ indices.
 
     # make sure enough lines
     if len(puzzle) < size:
-        print '{}:{} unexpected EOF'.format(filename, len(puzzle)+1)
+        print('{}:{} unexpected EOF'.format(filename, len(puzzle)+1))
         return None, None
 
     # truncate extraneous lines
@@ -190,15 +193,15 @@ indices.
 
     for i, row in enumerate(puzzle):
         if len(row) != size:
-            print '{}:{} row size mismatch'.format(filename, i+1)
+            print('{}:{} row size mismatch'.format(filename, i+1))
             return None, None
         for j, char in enumerate(row):
             if char.isalnum(): # flow endpoint
-                if colors.has_key(char):
+                if char in colors:
                     color = colors[char]
                     if color_count[color]:
-                        print '{}:{}:{} too many {} already'.format(
-                            filename, i+1, j, char)
+                        print('{}:{}:{} too many {} already'.format(
+                            filename, i+1, j, char))
                         return None, None
                     color_count[color] = 1
                 else:
@@ -207,15 +210,15 @@ indices.
                     color_count.append(0)
 
     # check parity
-    for char, color in colors.iteritems():
+    for char, color in colors.items():
         if not color_count[color]:
-            print 'color {} has start but no end!'.format(char)
+            print('color {} has start but no end!'.format(char))
             return None, None
 
     # print info
     if not options.quiet:
-        print 'read {}x{} puzzle with {} colors from {}'.format(
-            size, size, len(colors), filename)
+        print('read {}x{} puzzle with {} colors from {}'.format(
+            size, size, len(colors), filename))
         print
 
     puzzle, colors = repair_colors(puzzle, colors)
@@ -294,7 +297,7 @@ def make_dir_vars(puzzle, start_var):
                          in valid_neighbors(size, i, j))
 
         # OR them all together
-        cell_flags = reduce(operator.or_, neighbor_bits, 0)
+        cell_flags = functools.reduce(operator.or_, neighbor_bits, 0)
 
         # create a lookup for dir type vars in this cell
         dir_vars[i, j] = dict()
@@ -302,6 +305,8 @@ def make_dir_vars(puzzle, start_var):
         for code in DIR_TYPES:
             # only add var if cell has correct flags (i.e. if cell has
             # TOP, BOTTOM, RIGHT, don't add LR).
+
+            # ONLY ADDES VALID COMBOS OF DIRECTIONS, SO IF A CELL HAS VALID NEIGHBORS UP DOWN AND LEFT THEN IT WONT ANT BOTTOM RIGHT, OR LEFT RIGHT, OR TOP RIGHT TO THE POTENTIAL DIRECTIONS
             if cell_flags & code == code:
                 num_dir_vars += 1
                 dir_vars[i, j][code] = start_var + num_dir_vars
@@ -350,17 +355,17 @@ directions imply color matching with neighbors.
                 color_2 = color_var(n_i, n_j, color)
 
                 # for each direction variable in this scell
-                for dir_type, dir_var in cell_dir_dict.iteritems():
+                for dir_type, dir_var in cell_dir_dict.items():
 
                     # if neighbor is hit by this direction type
                     if dir_type & dir_bit:
                         # this direction type implies the colors are equal
-                        dir_clauses.append([-dir_var, -color_1, color_2])
-                        dir_clauses.append([-dir_var, color_1, -color_2])
+                        dir_clauses.append([-dir_var, -color_1, color_2]) # COLOR 2 AND COLOR 1 HAVE TO BE TRUE IS ESSENTIALLY WHAT THIS DOES BUT IT EQUATES THAT TO ONLY HAPPEN IF THIS IS THE CORRECT DIRECTION
+                        dir_clauses.append([-dir_var, color_1, -color_2]) # STATMENT GETS IGNORED IF THIS IS NOT DIRECTION
                     elif valid_pos(size, n_i, n_j):
                         # neighbor is not along this direction type,
                         # so this direction type implies the colors are not equal
-                        dir_clauses.append([-dir_var, -color_1, -color_2])
+                        dir_clauses.append([-dir_var, -color_1, -color_2]) # IF WE ARE THIS DIRECTION, THEN WE CAN'T BE COLOR 1 OR COLOR 2
 
     return dir_clauses
 
@@ -404,17 +409,17 @@ possibly negated.
     reduce_time = (datetime.now() - start).total_seconds()
 
     if not options.quiet:
-        print 'generated {:,} clauses over {:,} color variables'.format(
-            len(color_clauses), num_color_vars, grouping=True)
+        print('generated {:,} clauses over {:,} color variables'.format(
+            len(color_clauses), num_color_vars, grouping=True))
 
-        print 'generated {:,} dir clauses over {:,} dir variables'.format(
-            len(dir_clauses), num_dir_vars)
+        print( 'generated {:,} dir clauses over {:,} dir variables'.format(
+            len(dir_clauses), num_dir_vars))
 
-        print 'total {:,} clauses over {:,} variables'.format(
-            len(clauses), num_vars)
+        print( 'total {:,} clauses over {:,} variables'.format(
+            len(clauses), num_vars))
 
-        print 'reduced to SAT in {:.3f} seconds'.format(reduce_time)
-        print
+        print( 'reduced to SAT in {:.3f} seconds'.format(reduce_time))
+        print()
 
     return color_var, dir_vars, num_vars, clauses, reduce_time
 
@@ -456,7 +461,7 @@ one-hot encoding in each cell for color and direction-type. Returns a
 
                 # find which dir type variable for this cell is in the
                 # solution set
-                for dir_type, dir_var in dir_vars[i, j].iteritems():
+                for dir_type, dir_var in dir_vars[i, j].items():
                     if dir_var in sol:
                         assert cell_dir_type == -1
                         cell_dir_type = dir_type
@@ -598,9 +603,9 @@ def show_solution(options, colors, decoded):
 
     do_color = options.display_color
 
-    for char, color in colors.iteritems():
+    for char, color in colors.items():
         color_chars[color] = char
-        do_color = do_color and ANSI_LOOKUP.has_key(char)
+        do_color = do_color and char in ANSI_LOOKUP
 
     for decoded_row in decoded:
         for (color, dir_type) in decoded_row:
@@ -619,7 +624,7 @@ def show_solution(options, colors, decoded):
 
             if do_color:
 
-                if ANSI_LOOKUP.has_key(color_char):
+                if color_char in ANSI_LOOKUP:
                     ansi_code = ANSI_CELL_FORMAT.format(
                         ANSI_LOOKUP[color_char])
                 else:
@@ -678,20 +683,20 @@ needed.
     if not options.quiet:
         if options.display_cycles:
             for cycle_decoded in all_decoded[:-1]:
-                print 'intermediate solution with cycles:'
-                print
+                print( 'intermediate solution with cycles:')
+                print()
                 show_solution(options, colors, cycle_decoded)
                 print
 
         if decoded is None:
-            print 'solver returned {} after {:,} cycle '\
+            print( 'solver returned {} after {:,} cycle '\
                 'repairs and {:.3f} seconds'.format(
-                    str(sol), repairs, solve_time)
+                    str(sol), repairs, solve_time))
 
         else:
-            print 'obtained solution after {:,} cycle repairs '\
+            print( 'obtained solution after {:,} cycle repairs '\
                 'and {:.3f} seconds:'.format(
-                    repairs, solve_time)
+                    repairs, solve_time))
             print
             show_solution(options, colors, decoded)
             print
@@ -718,11 +723,11 @@ def print_summary(options, stats):
 
         if not options.quiet:
 
-            print '\n'+('*'*70)+'\n'
+            print( '\n'+('*'*70)+'\n')
 
             for result_char in solution_types:
 
-                print '{:d} {:s} searches took:\n'\
+                print( '{:d} {:s} searches took:\n'\
                     '  {:,.3f} sec. to reduce '\
                     '(with {:,d} variables and {:,d} clauses)\n'\
                     '  {:,.3f} sec. to solve (with {:d} repairs)\n'\
@@ -733,11 +738,11 @@ def print_summary(options, stats):
                         stats[result_char]['num_clauses'],
                         stats[result_char]['solve_time'],
                         stats[result_char]['repairs'],
-                        stats[result_char]['total_time'])
+                        stats[result_char]['total_time']))
 
             if len(solution_types) > 1:
 
-                print 'overall, {:d} searches took:\n'\
+                print( 'overall, {:d} searches took:\n'\
                     '  {:,.3f} sec. to reduce '\
                     '(with {:,d} variables and {:,d} clauses)\n'\
                     '  {:,.3f} sec. to solve (with {:d} repairs)\n'\
@@ -748,7 +753,7 @@ def print_summary(options, stats):
                         int(all_stats['num_clauses']),
                         all_stats['solve_time'],
                         int(all_stats['repairs']),
-                        all_stats['total_time'])
+                        all_stats['total_time']))
 
         else:
 
@@ -756,7 +761,7 @@ def print_summary(options, stats):
 
             for result_char in solution_types:
 
-                print '{:s}{:3d} total {:s} {:9,d} {:9,d} {:12,.3f} '\
+                print( '{:s}{:3d} total {:s} {:9,d} {:9,d} {:12,.3f} '\
                     '{:3d} {:12,.3f} {:12,.3f}'.format(
                         ' '*(max_width-9), stats[result_char]['count'],
                         result_char,
@@ -765,16 +770,16 @@ def print_summary(options, stats):
                         stats[result_char]['reduce_time'],
                         stats[result_char]['repairs'],
                         stats[result_char]['solve_time'],
-                        stats[result_char]['total_time'])
+                        stats[result_char]['total_time']))
 
             if len(solution_types) > 1:
 
-                print '{:s}{:3d} overall {:9,d} {:9,d} {:12,.3f} '\
+                print( '{:s}{:3d} overall {:9,d} {:9,d} {:12,.3f} '\
                     '{:3d} {:12,.3f} {:12,.3f}'.format(
                         ' '*(max_width-9), int(all_stats['count']),
                         int(all_stats['num_vars']), int(all_stats['num_clauses']),
                         all_stats['reduce_time'], int(all_stats['repairs']),
-                        all_stats['solve_time'], all_stats['total_time'])
+                        all_stats['solve_time'], all_stats['total_time']))
 
 ######################################################################
 
@@ -813,14 +818,14 @@ def pyflow_solver_main():
     for filename in options.filenames:
 
         if not options.quiet and puzzle_count:
-            print '\n'+('*'*70)+'\n'
+            print( '\n'+('*'*70)+'\n')
 
         # open file
         try:
             with open(filename, 'r') as infile:
                 puzzle, colors = parse_puzzle(options, infile, filename)
         except IOError:
-            print '{}: error opening file'.format(filename)
+            print( '{}: error opening file'.format(filename))
             continue
 
         if colors is None:
@@ -851,22 +856,22 @@ def pyflow_solver_main():
                          num_clauses=len(clauses),
                          count=1)
 
-        if not stats.has_key(result_char):
+        if result_char not in stats:
             stats[result_char] = cur_stats
         else:
             for key in cur_stats.keys():
                 stats[result_char][key] += cur_stats[key]
 
         if not options.quiet:
-            print 'finished in total of {:.3f} seconds'.format(
-                total_time)
+            print( 'finished in total of {:.3f} seconds'.format(
+                total_time))
         else:
 
-            print '{:>{}s} {} {:9,d} {:9,d} {:12,.3f} '\
+            print( '{:>{}s} {} {:9,d} {:9,d} {:12,.3f} '\
                 '{:3d} {:12,.3f} {:12,.3f}'.format(
                     filename, max_width, result_char,
                     num_vars, len(clauses), reduce_time,
-                    repairs, solve_time, total_time)
+                    repairs, solve_time, total_time))
 
 
     print_summary(options, stats)
